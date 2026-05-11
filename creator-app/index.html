@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+<div class="tab-bar">
+  <div class="tab-bar-tabs" id="tabBar">
+    <div class="tab-add" data-action="add-tab" title="New tab">+</div>
+  </div>
+  <div class="tab-bar-actions">
+    <div class="tab-action-btn" id="btnBaleCookies" title="Export Bale cookies to bale-cookies.json for headless mode">Bale Cookies</div>
+  </div>
+</div>
+<div class="toolbar" id="toolbar" style="display:none">
+  <button class="btn-vk" id="btnBale">Bale</button>
+  <span class="toolbar-spacer"></span>
+  <span class="toolbar-icon" id="btnSaveLogs" title="Save logs"><img src="resources/icons8-download-64.png"></span>
+</div>
+<div class="content" id="content">
+  <div class="welcome" id="welcome">
+    <h1>Whitelist Bypass - Creator</h1>
+    <p>Click + to add a tab</p>
+  </div>
+  <div class="headless-info" id="headlessInfo">
+    <div class="headless-title" id="headlessTitle">Headless</div>
+    <div class="headless-status" id="headlessStatus">Starting...</div>
+    <div class="headless-call-info" id="headlessCallInfo">
+      <div class="headless-row"><span class="headless-label">Join link:</span> <a id="headlessJoinLink" href="#" class="headless-link"></a><img class="headless-copy" src="resources/icons8-copy-50.png" data-copy="headlessJoinLink" title="Copy"></div>
+      <div class="headless-row"><span class="headless-label">Protocol:</span> <span id="headlessProtocol"></span></div>
+    </div>
+  </div>
+</div>
+<div class="logs" id="logsPanel" style="display:none">
+  <div class="log-panel">
+    <div class="log-title">Relay <span class="log-clear-btn" id="btnClearRelay" title="Clear">&#x2715;</span><img class="log-download-btn" id="btnSaveLogsHeadless" src="resources/icons8-download-64.png" title="Save logs"></div>
+    <div class="log-content relay" id="relayLog"></div>
+  </div>
+  <div class="log-panel" id="hookPanel">
+    <div class="log-title">Hook <span class="log-clear-btn" id="btnClearHook" title="Clear">&#x2715;</span></div>
+    <div class="log-content hook" id="hookLog"></div>
+  </div>
+</div>
+<div class="popup-overlay" id="errorPopup">
+  <div class="popup" style="padding:16px">
+    <h2 class="error-title">Error</h2>
+    <pre class="error-text" id="errorText"></pre>
+    <div class="popup-buttons" style="margin-top:12px">
+      <button class="btn-cancel" id="btnErrorClose">Close</button>
+    </div>
+  </div>
+</div>
+<script>require('./dist/renderer/index.js')</script>
+</body>
+</html>

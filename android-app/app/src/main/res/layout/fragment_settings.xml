@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="8dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/splitTunnelingItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:paddingHorizontal="24dp"
+                android:paddingVertical="14dp"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/splitTunnelingAppsItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:paddingHorizontal="24dp"
+                android:paddingVertical="14dp"
+                android:text="@string/menu_split_tunneling_manage"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/proxyItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:paddingHorizontal="24dp"
+                android:paddingVertical="14dp"
+                android:text="@string/menu_proxy_settings"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/dnsItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:paddingHorizontal="24dp"
+                android:paddingVertical="14dp"
+                android:text="@string/menu_dns_settings"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/vp8PacingItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:paddingHorizontal="24dp"
+                android:paddingVertical="14dp"
+                android:text="@string/menu_vp8_pacing"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/nameInCallItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:paddingHorizontal="24dp"
+                android:paddingVertical="14dp"
+                android:text="@string/menu_name_in_call"
+                android:textSize="16sp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginVertical="4dp"
+                android:background="?android:attr/listDivider" />
+
+            <CheckBox
+                android:id="@+id/reconnectOnStartCheckbox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="24dp"
+                android:paddingVertical="10dp"
+                android:text="@string/menu_reconnect_on_start"
+                android:textSize="16sp" />
+
+            <CheckBox
+                android:id="@+id/showLogsCheckbox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="24dp"
+                android:paddingVertical="10dp"
+                android:text="@string/menu_show_logs"
+                android:textSize="16sp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginVertical="4dp"
+                android:background="?android:attr/listDivider" />
+
+            <TextView
+                android:id="@+id/shareLogsItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:paddingHorizontal="24dp"
+                android:paddingVertical="14dp"
+                android:text="@string/menu_share_logs"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/resetItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:paddingHorizontal="24dp"
+                android:paddingVertical="14dp"
+                android:text="@string/menu_reset"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+    </ScrollView>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?android:attr/listDivider" />
+
+    <Button
+        android:id="@+id/closeButton"
+        style="?android:attr/buttonBarButtonStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/settings_close"
+        android:textSize="16sp" />
+
+</LinearLayout>

@@ -1,0 +1,61 @@
+{
+  "name": "whitelist-bypass-creator-iran",
+  "version": "0.1.0",
+  "main": "dist/main/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "tsc && electron .",
+    "start:dev": "electron ."
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0",
+    "typescript": "^5.6.0"
+  },
+  "build": {
+    "appId": "whitelist.bypass.creator.iran",
+    "productName": "Whitelist Bypass Creator Iran",
+    "directories": {
+      "output": "../prebuilts"
+    },
+    "files": [
+      "dist/**/*",
+      "index.html",
+      "styles/**/*",
+      "scripts/**/*",
+      "resources/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "../hooks/video-bale.js",
+        "to": "hooks/video-bale.js"
+      }
+    ],
+    "mac": {
+      "target": "dmg",
+      "icon": "resources/icon.icns",
+      "extraResources": [
+        { "from": "../relay/relay-darwin", "to": "relay" },
+        { "from": "../headless/headless-bale-darwin", "to": "headless-bale-creator" }
+      ]
+    },
+    "win": {
+      "target": "portable",
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "icon": "resources/icon.ico",
+      "extraResources": [
+        { "from": "../relay/relay-bundle.exe", "to": "relay.exe" },
+        { "from": "../headless/headless-bale-bundle.exe", "to": "headless-bale-creator.exe" }
+      ]
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "resources/icon.png",
+      "extraResources": [
+        { "from": "../relay/relay-bundle", "to": "relay" },
+        { "from": "../headless/headless-bale-bundle", "to": "headless-bale-creator" }
+      ]
+    }
+  }
+}
