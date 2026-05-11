@@ -2,8 +2,6 @@ import { RendererTabManager } from './tab-manager';
 import {
   renderTabs,
   renderContent,
-  loadURL,
-  startHookLogPoller,
   closeError,
   clearLog,
   saveLogs,
@@ -13,8 +11,7 @@ import {
   attachLoginWebview,
   detachLoginWebview,
 } from './dom';
-import { BALE_URL } from '../constants';
-import { Platform, Bridge, LogPanel } from '../types';
+import { Bridge } from '../types';
 
 declare const window: Window & { bridge: Bridge };
 
@@ -51,7 +48,7 @@ function bindTabBarEvents(): void {
 }
 
 function bindToolbarEvents(): void {
-  document.getElementById('btnBale')!.addEventListener('click', () => tm.switchToHeadless(Platform.Bale));
+  document.getElementById('btnBale')!.addEventListener('click', () => tm.switchToHeadless());
   document.getElementById('btnSaveLogs')!.addEventListener('click', saveLogs);
 }
 
@@ -68,8 +65,7 @@ function bindErrorPopup(): void {
 }
 
 function bindLogEvents(): void {
-  document.getElementById('btnClearRelay')!.addEventListener('click', () => clearLog(LogPanel.Relay));
-  document.getElementById('btnClearHook')!.addEventListener('click', () => clearLog(LogPanel.Hook));
+  document.getElementById('btnClearRelay')!.addEventListener('click', clearLog);
   document.getElementById('btnSaveLogsHeadless')!.addEventListener('click', saveLogs);
 }
 
@@ -115,8 +111,6 @@ function init(): void {
       renderContent(tm);
     }
   });
-
-  startHookLogPoller(tm);
 }
 
 init();

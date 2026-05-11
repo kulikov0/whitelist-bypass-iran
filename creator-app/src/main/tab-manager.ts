@@ -3,16 +3,13 @@ import { spawn, ChildProcess } from 'child_process';
 import { BrowserWindow, session } from 'electron';
 import * as net from 'net';
 import * as path from 'path';
-import * as fs from 'fs/promises';
-import { TabState, PortPair, TabListEntry, Platform, TunnelMode, RelayMode, CallStatus } from '../types';
+import { TabState, PortPair } from '../types';
 import {
   INITIAL_PORT_BASE,
   IPC,
-  RELAY_RESTART_DELAY_MS,
   SESSION_PARTITION,
   BALE_COOKIE_DOMAINS,
   BALE_URL,
-  LOG_CAPTURE_SNIPPET,
 } from '../constants';
 
 function resolveResourcePath(devRelative: string, packedName: string): string {
@@ -28,25 +25,15 @@ function binaryName(base: string): string {
 
 export class TabManager {
   private tabs = new Map<string, TabState>();
-  private callStatusCache = new Map<string, CallStatus>();
   private nextPortBase = INITIAL_PORT_BASE;
   private _mainWindow: BrowserWindow | null = null;
-  private relayPath: string;
   private headlessBalePath: string;
-  private hooksDir: string;
 
   constructor() {
-    this.relayPath = resolveResourcePath(
-      path.join('relay', binaryName('relay')),
-      binaryName('relay'),
-    );
     this.headlessBalePath = resolveResourcePath(
       path.join('headless', 'bale', binaryName('headless-bale-creator')),
       binaryName('headless-bale-creator'),
     );
-    this.hooksDir = app.isPackaged
-      ? path.join(process.resourcesPath!, 'hooks')
-      : path.join(__dirname, '..', '..', '..', 'hooks');
   }
 
   get mainWindow(): BrowserWindow | null {
@@ -83,8 +70,6 @@ export class TabManager {
       const ports = await this.allocPorts();
       this.tabs.set(tabId, {
         relay: null,
-        tunnelMode: TunnelMode.PionVideo,
-        platform: Platform.Bale,
         pionPort: ports.pion,
       });
     }
@@ -101,28 +86,6 @@ export class TabManager {
       this.killRelay(tabId, tab);
       this.tabs.delete(tabId);
     }
-    this.callStatusCache.delete(tabId);
-  }
-
-  setCallStatus(tabId: string, status: CallStatus): void {
-    this.callStatusCache.set(tabId, status);
-  }
-
-  getCallStatus(tabId: string): CallStatus {
-    return this.callStatusCache.get(tabId) || CallStatus.Inactive;
-  }
-
-  getTabList(): TabListEntry[] {
-    const result: TabListEntry[] = [];
-    this.tabs.forEach((tab, tabId) => {
-      result.push({
-        id: tabId,
-        platform: tab.platform,
-        mode: tab.tunnelMode,
-        callStatus: this.getCallStatus(tabId),
-      });
-    });
-    return result;
   }
 
   private sendLog(tabId: string, msg: string): void {
@@ -152,23 +115,8 @@ export class TabManager {
     proc.stderr?.on('data', onData);
   }
 
-  startRelay(tabId: string, tab: TabState): void {
-    this.killRelay(tabId, tab);
-    const relayMode: RelayMode = RelayMode.BaleVideoCreator;
-    const proc = spawn(this.relayPath, ['--mode', relayMode, '--ws-port', String(tab.pionPort)], {
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
-    tab.relay = proc;
-    this.attachProcessOutput(proc, tabId);
-    proc.on('close', (code) => {
-      this.sendLog(tabId, `Relay exited with code ${code}`);
-    });
-  }
-
-  async startHeadless(tabId: string, platform: Platform): Promise<void> {
+  async startHeadless(tabId: string): Promise<void> {
     const tab = await this.getOrCreateTab(tabId);
-    tab.tunnelMode = TunnelMode.HeadlessBale;
-    tab.platform = platform;
     let cookieStr = await this.getBaleCookieString();
     if (!cookieStr) {
       this.sendLog(tabId, 'No Bale cookies found, opening login.');
@@ -199,7 +147,7 @@ export class TabManager {
         this.sendLog(tabId, 'Bale session rejected, clearing and re-prompting login.');
         await this.clearBaleAuthCookies();
         if (this.tabs.get(tabId) === tab) {
-          this.startHeadless(tabId, platform);
+          this.startHeadless(tabId);
         }
       }
     });
@@ -256,21 +204,6 @@ export class TabManager {
 
   killAllRelays(): void {
     this.tabs.forEach((tab, tabId) => this.killRelay(tabId, tab));
-  }
-
-  async loadHook(tabId: string, _url: string, tab: TabState): Promise<string> {
-    tab.platform = Platform.Bale;
-    const hook = await fs.readFile(path.join(this.hooksDir, 'video-bale.js'), 'utf8');
-    return LOG_CAPTURE_SNIPPET + `window.PION_PORT=${tab.pionPort};window.IS_CREATOR=true;` + hook;
-  }
-
-  async setTunnelMode(tabId: string, mode: TunnelMode, platform?: Platform): Promise<void> {
-    const tab = await this.getOrCreateTab(tabId);
-    tab.tunnelMode = mode;
-    if (platform) tab.platform = platform;
-    if (mode === TunnelMode.HeadlessBale) return;
-    this.killRelay(tabId, tab);
-    setTimeout(() => this.startRelay(tabId, tab), RELAY_RESTART_DELAY_MS);
   }
 
   async getBaleCookieString(): Promise<string> {

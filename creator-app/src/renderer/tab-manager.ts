@@ -1,4 +1,4 @@
-import { RendererTab, TunnelMode, Platform, Bridge } from '../types';
+import { RendererTab, Bridge } from '../types';
 import { HeadlessLogMarker } from '../constants';
 
 declare const window: Window & { bridge: Bridge };
@@ -16,33 +16,23 @@ export class RendererTabManager {
   createTab(): string {
     const tabId = 'tab-' + this.nextId++;
     this.tabs[tabId] = {
-      wv: null,
-      url: '',
-      mode: TunnelMode.PionVideo,
       relayLogs: '',
-      hookLogs: '',
       name: '',
     };
     this.selectTab(tabId);
     return tabId;
   }
 
-  switchToHeadless(platform: Platform): void {
+  switchToHeadless(): void {
     if (!this.activeTabId) return;
     const tab = this.tabs[this.activeTabId];
-    if (tab.wv) tab.wv.remove();
-    tab.wv = null;
-    tab.url = '';
-    tab.mode = TunnelMode.HeadlessBale;
     tab.name = 'Headless Bale';
     tab.headless = true;
-    tab.platform = platform;
     tab.callInfo = undefined;
     tab.headlessStatus = 'Starting...';
     tab.tunnelConnected = false;
     tab.relayLogs = '';
-    tab.hookLogs = '';
-    window.bridge.startHeadless(this.activeTabId, platform);
+    window.bridge.startHeadless(this.activeTabId);
     this.onRender();
   }
 
@@ -65,8 +55,6 @@ export class RendererTabManager {
   }
 
   closeTab(tabId: string): void {
-    const tab = this.tabs[tabId];
-    if (tab?.wv) tab.wv.remove();
     window.bridge.closeTab(tabId);
     delete this.tabs[tabId];
     if (this.activeTabId === tabId) {
@@ -85,9 +73,7 @@ export class RendererTabManager {
   saveCurrentTabLogs(): void {
     if (this.activeTabId && this.tabs[this.activeTabId]) {
       const relayEl = document.getElementById('relayLog');
-      const hookEl = document.getElementById('hookLog');
       if (relayEl) this.tabs[this.activeTabId].relayLogs = relayEl.textContent || '';
-      if (hookEl) this.tabs[this.activeTabId].hookLogs = hookEl.textContent || '';
     }
   }
 
@@ -98,7 +84,6 @@ export class RendererTabManager {
 
   getTabLabel(tab: RendererTab): string {
     if (tab.name) return tab.name;
-    if (tab.url && tab.url.includes('bale.ai')) return 'Bale';
     return 'New';
   }
 
@@ -145,18 +130,5 @@ export class RendererTabManager {
     }
     if (changed && tabId === this.activeTabId) this.onRender();
     return changed;
-  }
-
-  setTunnelMode(mode: string): void {
-    if (!this.activeTabId) return;
-    const tab = this.tabs[this.activeTabId];
-    if (!tab) return;
-    tab.mode = mode as TunnelMode;
-    window.bridge.setTunnelMode(this.activeTabId, mode).then(() => {
-      if (tab.wv) {
-        tab.wv.executeJavaScript('window.__hookInstalled = false').catch(() => {});
-        tab.wv.reload();
-      }
-    });
   }
 }

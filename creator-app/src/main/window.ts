@@ -2,7 +2,6 @@ import { app, BrowserWindow, session, Session } from 'electron';
 import * as path from 'path';
 import { TabManager } from './tab-manager';
 import { SESSION_PARTITION, USER_AGENT, WINDOW_WIDTH, WINDOW_HEIGHT } from '../constants';
-import { CallStatus } from '../types';
 
 function stripCSP(ses: Session): void {
   ses.webRequest.onHeadersReceived((details, callback) => {
@@ -13,20 +12,6 @@ function stripCSP(ses: Session): void {
     delete headers['Content-Security-Policy-Report-Only'];
     callback({ responseHeaders: headers });
   });
-}
-
-function parseCallStatus(msg: string): { tabId: string; status: CallStatus } | null {
-  const prefix = '[CALL_STATUS] ';
-  const idx = msg.indexOf(prefix);
-  if (idx === -1) return null;
-  const parts = msg.substring(idx + prefix.length);
-  const colonIdx = parts.indexOf(':');
-  if (colonIdx === -1) return null;
-  const status = parts.substring(colonIdx + 1);
-  return {
-    tabId: parts.substring(0, colonIdx),
-    status: status === CallStatus.Active ? CallStatus.Active : CallStatus.Inactive,
-  };
 }
 
 export function createWindow(tabManager: TabManager): BrowserWindow {
@@ -58,14 +43,6 @@ export function createWindow(tabManager: TabManager): BrowserWindow {
   win.webContents.on('did-attach-webview', (_e, wvContents) => {
     wvContents.on('before-input-event', (_e, input) => {
       if (input.key === 'F12') wvContents.openDevTools();
-    });
-
-    wvContents.on('console-message', (_e, _level, msg) => {
-      const callStatus = parseCallStatus(msg);
-      if (callStatus) {
-        console.log('[MAIN] Cached status for', callStatus.tabId, ':', callStatus.status);
-        tabManager.setCallStatus(callStatus.tabId, callStatus.status);
-      }
     });
   });
 

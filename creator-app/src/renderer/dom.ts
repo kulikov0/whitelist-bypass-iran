@@ -1,5 +1,5 @@
-import { Platform, Bridge, LogPanel, Webview } from '../types';
-import { SESSION_PARTITION, HOOK_POLL_INTERVAL_MS } from '../constants';
+import { Bridge, Webview } from '../types';
+import { SESSION_PARTITION } from '../constants';
 import { RendererTabManager } from './tab-manager';
 
 declare const window: Window & { bridge: Bridge };
@@ -22,15 +22,10 @@ export function renderTabs(tm: RendererTabManager): void {
 }
 
 export function renderContent(tm: RendererTabManager): void {
-  const content = document.getElementById('content')!;
   const welcome = document.getElementById('welcome')!;
   const toolbar = document.getElementById('toolbar')!;
   const logsPanel = document.getElementById('logsPanel')!;
   const headlessInfo = document.getElementById('headlessInfo')!;
-  const hookPanel = document.getElementById('hookPanel')!;
-
-  const webviews = content.querySelectorAll('webview');
-  webviews.forEach((wv) => wv.classList.add('hidden'));
 
   if (!tm.activeTabId || !tm.tabs[tm.activeTabId]) {
     welcome.style.display = 'flex';
@@ -43,8 +38,6 @@ export function renderContent(tm: RendererTabManager): void {
   logsPanel.style.display = 'flex';
 
   const activeTab = tm.tabs[tm.activeTabId];
-  hookPanel.style.display = activeTab.headless ? 'none' : 'flex';
-  logsPanel.classList.toggle('relay-only', activeTab.headless === true);
   if (activeTab.headless) {
     toolbar.style.display = 'none';
     headlessInfo.style.display = 'block';
@@ -62,7 +55,6 @@ export function renderContent(tm: RendererTabManager): void {
   } else {
     toolbar.style.display = 'flex';
     headlessInfo.style.display = 'none';
-    if (activeTab.wv) activeTab.wv.classList.remove('hidden');
   }
 
   if (activeTab.loginWebview) {
@@ -71,15 +63,12 @@ export function renderContent(tm: RendererTabManager): void {
   }
 
   document.getElementById('relayLog')!.textContent = activeTab.relayLogs || '';
-  document.getElementById('hookLog')!.textContent = activeTab.hookLogs || '';
   scrollLogs();
 }
 
 export function scrollLogs(): void {
   const relayEl = document.getElementById('relayLog');
-  const hookEl = document.getElementById('hookLog');
   if (relayEl) relayEl.scrollTop = relayEl.scrollHeight;
-  if (hookEl) hookEl.scrollTop = hookEl.scrollHeight;
 }
 
 export function attachLoginWebview(tm: RendererTabManager, tabId: string, url: string): void {
@@ -105,78 +94,6 @@ export function detachLoginWebview(tm: RendererTabManager, tabId: string): void 
   }
 }
 
-export function loadURL(tm: RendererTabManager, url: string): void {
-  if (!tm.activeTabId) return;
-  const activeTab = tm.tabs[tm.activeTabId];
-  activeTab.platform = Platform.Bale;
-  window.bridge.setTunnelMode(tm.activeTabId, activeTab.mode, activeTab.platform);
-  if (activeTab.wv) activeTab.wv.remove();
-
-  const webview = document.createElement('webview') as unknown as Webview;
-  webview.setAttribute('src', url);
-  webview.setAttribute('partition', SESSION_PARTITION);
-  webview.setAttribute('nodeintegration', '');
-  webview.setAttribute('nodeintegrationinsubframes', '');
-  webview.setAttribute('useragent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36');
-  webview.classList.add('webview-full');
-  webview.dataset.tabId = tm.activeTabId;
-  document.getElementById('content')!.appendChild(webview);
-
-  webview.addEventListener('dom-ready', () => {
-    webview.setAudioMuted(true);
-    const currentTabId = webview.dataset.tabId!;
-
-    window.bridge.getHookCode(currentTabId, webview.getURL()).then((code: string) => {
-      webview.executeJavaScript(code).catch(() => {});
-    });
-
-    window.bridge.getCallCreatorCode('call-checker.js').then((checkerCode: string) => {
-      const inject = `window.__CALL_CHECKER_TAB_ID = "${currentTabId}"; ${checkerCode}`;
-      webview.executeJavaScript(inject).catch(() => {});
-    });
-  });
-
-  webview.addEventListener('did-navigate', () => {
-    activeTab.url = webview.getURL() || activeTab.url;
-    renderTabs(tm);
-    const currentTabId = webview.dataset.tabId!;
-    webview.executeJavaScript('window.__hookInstalled = false').catch(() => {});
-    window.bridge.getHookCode(currentTabId, webview.getURL()).then((code: string) => {
-      webview.executeJavaScript(code).catch(() => {});
-    });
-    window.bridge.getCallCreatorCode('call-checker.js').then((checkerCode: string) => {
-      const inject = `window.__CALL_CHECKER_TAB_ID = "${currentTabId}"; ${checkerCode}`;
-      webview.executeJavaScript(inject).catch(() => {});
-    });
-  });
-
-  activeTab.wv = webview;
-  activeTab.url = url;
-  renderTabs(tm);
-  renderContent(tm);
-}
-
-export function startHookLogPoller(tm: RendererTabManager): void {
-  setInterval(() => {
-    if (!tm.activeTabId || !tm.tabs[tm.activeTabId]?.wv) return;
-    const webview = tm.tabs[tm.activeTabId].wv!;
-    webview
-      .executeJavaScript(
-        '(window.__hookLogs && window.__hookLogs.length) ? window.__hookLogs.splice(0) : []',
-      )
-      .then((logs: string[]) => {
-        if (!logs.length) return;
-        const el = document.getElementById('hookLog')!;
-        logs.forEach((msg) => {
-          if (el.textContent!.length > 0) el.textContent += '\n';
-          el.textContent += msg.replace('[HOOK] ', '');
-        });
-        el.scrollTop = el.scrollHeight;
-      })
-      .catch(() => {});
-  }, HOOK_POLL_INTERVAL_MS);
-}
-
 function escapeHtml(str: string): string {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
@@ -190,16 +107,13 @@ export function closeError(): void {
   document.getElementById('errorPopup')!.classList.remove('visible');
 }
 
-export function clearLog(panel: LogPanel): void {
-  const id = panel === LogPanel.Relay ? 'relayLog' : 'hookLog';
-  document.getElementById(id)!.textContent = '';
+export function clearLog(): void {
+  document.getElementById('relayLog')!.textContent = '';
 }
 
 export function saveLogs(): void {
   const relay = document.getElementById('relayLog')!.textContent || '';
-  const hook = document.getElementById('hookLog')!.textContent || '';
-  const text = '=== RELAY ===\n' + relay + '\n\n=== HOOK ===\n' + hook;
-  const blob = new Blob([text], { type: 'text/plain' });
+  const blob = new Blob([relay], { type: 'text/plain' });
   const anchor = document.createElement('a');
   anchor.href = URL.createObjectURL(blob);
   anchor.download = 'tunnel-logs-' + new Date().toISOString().replace(/[:.]/g, '-') + '.txt';

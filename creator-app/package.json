@@ -23,14 +23,7 @@
       "dist/**/*",
       "index.html",
       "styles/**/*",
-      "scripts/**/*",
       "resources/**/*"
-    ],
-    "extraResources": [
-      {
-        "from": "../hooks/video-bale.js",
-        "to": "hooks/video-bale.js"
-      }
     ],
     "mac": {
       "target": "dmg",

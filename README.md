@@ -48,7 +48,6 @@ Traffic goes through the Bale SFU, which is on the government whitelist. To DPI 
 - `headless/tests/` - End-to-end smoke tests
 - `android-app/` - Android joiner: VpnService + tun2socks + headless Pion
 - `creator-app/` - Electron desktop creator app: GUI front-end that spawns the headless Go binary; suitable for both interactive use and deployments
-- `hooks/` - JavaScript hook (`video-bale.js`) injected into the Creator app's webview during the auth flow
 
 ## Download
 
