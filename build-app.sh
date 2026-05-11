@@ -16,8 +16,8 @@ echo "Building APK..."
 APK="app/build/outputs/apk/debug/app-debug.apk"
 if [ -f "$APK" ]; then
     mkdir -p "$ROOT/prebuilts"
-    cp "$APK" "$ROOT/prebuilts/bale-bypass.apk"
-    echo "APK ready: prebuilts/bale-bypass.apk ($(du -h "$ROOT/prebuilts/bale-bypass.apk" | cut -f1))"
+    cp "$APK" "$ROOT/prebuilts/whitelist-bypass.apk"
+    echo "APK ready: prebuilts/whitelist-bypass.apk ($(du -h "$ROOT/prebuilts/whitelist-bypass.apk" | cut -f1))"
 else
     echo "Build failed, APK not found"
     exit 1

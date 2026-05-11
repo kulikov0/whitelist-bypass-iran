@@ -66,7 +66,7 @@ Download and run the Electron app from [GitHub Releases](../../releases). It bun
 
 ### Joiner side (censored, Android)
 
-- **Android** - install `bale-bypass.apk` from [Releases](../../releases). Allow the VPN prompt on first launch. Paste the join link and tap GO; system-wide traffic flows through the call.
+- **Android** - install `whitelist-bypass.apk` from [Releases](../../releases). Allow the VPN prompt on first launch. Paste the join link and tap GO; system-wide traffic flows through the call.
 - **Linux desktop** - run the headless joiner; it exposes a SOCKS5 proxy on the given port for whatever you point at it. Useful for servers and Linux clients. Optional `--socks-user` / `--socks-pass` enable SOCKS5 username/password auth.
   - Bale: `headless-bale-joiner --join-link <link> --socks-port 1080 [--socks-user u --socks-pass p]`
 
@@ -104,7 +104,7 @@ Output in `prebuilts/`:
 | `BaleBypass Creator-*-x64.exe` | Windows x64 |
 | `BaleBypass Creator-*-ia32.exe` | Windows x86 |
 | `BaleBypass Creator-*.AppImage` | Linux x64 |
-| `bale-bypass.apk` | Android |
+| `whitelist-bypass.apk` | Android |
 
 ### Docker build
 
