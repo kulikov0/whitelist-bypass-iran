@@ -17,6 +17,15 @@ echo ""
 echo "=== Building creator-app ==="
 "$ROOT/build-creator.sh"
 
+if [ "$(uname)" = "Darwin" ]; then
+    echo ""
+    echo "=== Building iOS app ==="
+    "$ROOT/build-ios.sh"
+else
+    echo ""
+    echo "=== Skipping iOS build (requires macOS) ==="
+fi
+
 echo ""
 echo "=== Release complete ==="
 ls -lh "$PREBUILTS/"
