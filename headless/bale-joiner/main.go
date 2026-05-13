@@ -47,6 +47,7 @@ func main() {
 	resources := flag.String("resources", "default", "resource mode: moderate, default, unlimited")
 	vp8FPS := flag.Int("vp8-fps", 24, "VP8 frame rate")
 	vp8Batch := flag.Int("vp8-batch", 30, "VP8 batch multiplier")
+	tunnelMode := flag.String("tunnel-mode", "vp8", "tunnel mode: vp8 or dc")
 	flag.Parse()
 
 	if *joinLink == "" {
@@ -56,7 +57,11 @@ func main() {
 	c := joiner.NewBaleHeadlessJoiner(log.Printf, desktopResolve, stdoutStatus{}, noopPCConfigurer{})
 
 	c.OnConnected = func(tun tunnel.DataTunnel) {
-		bridge := tunnel.NewRelayBridgeWithAuth(tun, "joiner", common.VP8BufSize, log.Printf, *socksUser, *socksPass)
+		readBuf := common.VP8BufSize
+		if _, ok := tun.(*tunnel.DCTunnel); ok {
+			readBuf = common.DCSocksReadBuf
+		}
+		bridge := tunnel.NewRelayBridgeWithAuth(tun, "joiner", readBuf, log.Printf, *socksUser, *socksPass)
 		bridge.MarkReady()
 		addr := fmt.Sprintf("127.0.0.1:%d", *socksPort)
 		go func() {
@@ -73,12 +78,14 @@ func main() {
 		Resources   string `json:"resources"`
 		VP8FPS      int    `json:"vp8Fps"`
 		VP8Batch    int    `json:"vp8Batch"`
+		TunnelMode  string `json:"tunnelMode"`
 	}{
 		JoinLink:    *joinLink,
 		DisplayName: *displayName,
 		Resources:   *resources,
 		VP8FPS:      *vp8FPS,
 		VP8Batch:    *vp8Batch,
+		TunnelMode:  *tunnelMode,
 	}
 	js, _ := json.Marshal(params)
 

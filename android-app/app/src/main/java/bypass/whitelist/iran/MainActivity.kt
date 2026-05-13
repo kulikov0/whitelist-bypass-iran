@@ -210,6 +210,6 @@ class MainActivity : AppCompatActivity(), SettingsDialogFragment.Listener, JoinF
     }
 
     companion object {
-        private const val CALL_LINK = "" // Open call page on app start (do not delete - I need it for debug)
+        private const val CALL_LINK = "https://meet.bale.ai/i/fgvq-7s367-t27j" // Open call page on app start (do not delete - I need it for debug)
     }
 }

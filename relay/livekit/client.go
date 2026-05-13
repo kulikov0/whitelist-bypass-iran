@@ -356,6 +356,7 @@ func (c *Client) handleSignal(data []byte) {
 		if c.OnParticipantUpdate != nil && len(sr.Participants) > 0 {
 			c.OnParticipantUpdate(sr.Participants)
 		}
+	case signalRespPongResp:
 	default:
 		c.logFn("[lk] <- signal kind=%d (%d bytes)", sr.Kind, len(data))
 	}

@@ -89,6 +89,14 @@ func (s *SequencedTunnel) Stats() (delivered, reordered, skipped, dropped uint64
 	return s.delivered.Load(), s.reordered.Load(), s.skipped.Load(), s.dropped.Load()
 }
 
+func (s *SequencedTunnel) ResetRecv() {
+	s.mu.Lock()
+	s.expectedSeq = 0
+	s.haveExpect = false
+	s.reorderBuf = make(map[uint32][]byte)
+	s.mu.Unlock()
+}
+
 func (s *SequencedTunnel) handleInner(data []byte) {
 	if len(data) < seqHeaderLen {
 		return

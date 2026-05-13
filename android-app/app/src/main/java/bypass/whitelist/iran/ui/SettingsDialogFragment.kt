@@ -58,6 +58,7 @@ class SettingsDialogFragment : DialogFragment() {
         val splitTunnelingAppsItem = view.findViewById<TextView>(R.id.splitTunnelingAppsItem)
         val proxyItem = view.findViewById<TextView>(R.id.proxyItem)
         val dnsItem = view.findViewById<TextView>(R.id.dnsItem)
+        val tunnelModeItem = view.findViewById<TextView>(R.id.tunnelModeItem)
         val vp8PacingItem = view.findViewById<TextView>(R.id.vp8PacingItem)
         val nameInCallItem = view.findViewById<TextView>(R.id.nameInCallItem)
         val reconnectCheckbox = view.findViewById<CheckBox>(R.id.reconnectOnStartCheckbox)
@@ -68,6 +69,8 @@ class SettingsDialogFragment : DialogFragment() {
 
         updateSplitTunnelingLabel(splitTunnelingItem)
         updateSplitTunnelingAppsEnabled(splitTunnelingAppsItem)
+        updateTunnelModeLabel(tunnelModeItem)
+        updateVp8PacingEnabled(vp8PacingItem)
 
         reconnectCheckbox.isChecked = Prefs.connectOnStart
         showLogsCheckbox.isChecked = Prefs.showLogs
@@ -91,6 +94,10 @@ class SettingsDialogFragment : DialogFragment() {
 
         dnsItem.setOnClickListener {
             DnsSettingsDialogFragment().show(childFragmentManager, DnsSettingsDialogFragment.TAG)
+        }
+
+        tunnelModeItem.setOnClickListener {
+            showTunnelModeDialog(tunnelModeItem, vp8PacingItem)
         }
 
         vp8PacingItem.setOnClickListener {
@@ -127,6 +134,40 @@ class SettingsDialogFragment : DialogFragment() {
 
     private fun updateSplitTunnelingLabel(textView: TextView) {
         textView.text = getString(R.string.menu_split_tunneling, splitTunnelingMode.label)
+    }
+
+    private fun updateTunnelModeLabel(textView: TextView) {
+        textView.text = getString(R.string.menu_tunnel_mode, Prefs.tunnelMode.label)
+    }
+
+    private fun updateVp8PacingEnabled(textView: TextView) {
+        val enabled = Prefs.tunnelMode == TunnelMode.VIDEO
+        textView.isEnabled = enabled
+        textView.alpha = if (enabled) 1.0f else 0.4f
+    }
+
+    private fun showTunnelModeDialog(tunnelModeItem: TextView, vp8PacingItem: TextView) {
+        val modes = TunnelMode.entries.toTypedArray()
+        val labels = modes.map { it.label }.toTypedArray()
+        val selectedIndex = modes.indexOf(Prefs.tunnelMode)
+
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.tunnel_mode_prompt)
+            .setSingleChoiceItems(labels, selectedIndex) { dialog, which ->
+                val newMode = modes[which]
+                if (newMode != Prefs.tunnelMode) {
+                    Prefs.tunnelMode = newMode
+                    listener?.onTunnelModeChanged(newMode)
+                    updateTunnelModeLabel(tunnelModeItem)
+                    updateVp8PacingEnabled(vp8PacingItem)
+                    if (TunnelVpnService.instance?.isRunning == true) {
+                        Toast.makeText(requireContext(), R.string.split_tunneling_mode_changed, Toast.LENGTH_SHORT).show()
+                    }
+                }
+                dialog.dismiss()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
     }
 
     private fun updateSplitTunnelingAppsEnabled(textView: TextView) {

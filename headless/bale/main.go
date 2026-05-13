@@ -87,6 +87,7 @@ func (c *creator) run() {
 	log.Printf("[obf] localEpoch=0x%08x", obf.LocalEpoch())
 
 	sess := bale.NewSession(bale.SessionConfig{
+		Role:       bale.RoleCreator,
 		WSURL:      joined.URL,
 		RoomToken:  joined.LivekitJWT,
 		Origin:     "https://meet.bale.ai",
@@ -94,10 +95,29 @@ func (c *creator) run() {
 		LogFn:      log.Printf,
 		VP8FPS:     c.vp8FPS,
 		VP8Batch:   c.vp8Batch,
+		KickFn: func(identity string) {
+			if _, err := c.bridge.Unary("bale.meet.v1.Meet", "RemoveParticipant", bale.EncodeRemoveParticipantRequest(call.ID, identity, false)); err != nil {
+				log.Printf("[kick] RemoveParticipant identity=%s: %v", identity, err)
+			}
+		},
 	})
+	var bridge *tunnel.RelayBridge
 	sess.OnConnected = func(tun tunnel.DataTunnel) {
-		tunnel.NewRelayBridge(tun, "creator", common.VP8BufSize, log.Printf)
+		readBuf := common.VP8BufSize
+		if _, ok := tun.(*tunnel.DCTunnel); ok {
+			readBuf = common.DCSocksReadBuf
+		}
+		if bridge != nil {
+			bridge.Reset()
+		}
+		bridge = tunnel.NewRelayBridge(tun, "creator", readBuf, log.Printf)
 		fmt.Print("\n  TUNNEL CONNECTED\n\n")
+	}
+	sess.OnPeerRestart = func() {
+		if bridge != nil {
+			log.Printf("[lk] peer restart: flushing bridge state")
+			bridge.Reset()
+		}
 	}
 	if err := sess.Start(); err != nil {
 		log.Fatalf("[session] %v", err)

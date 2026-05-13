@@ -46,6 +46,17 @@ func EncodeJoinGroupCallRequest(callID int64, name string) []byte {
 	return w.buf
 }
 
+func EncodeRemoveParticipantRequest(callID int64, identity string, blockFromCall bool) []byte {
+	w := pbWriter{}
+	w.int64(1, callID)
+	w.string(2, identity)
+	if blockFromCall {
+		w.tag(3, wireVarint)
+		w.varint(1)
+	}
+	return w.buf
+}
+
 func DecodeCallEnvelope(data []byte) (Call, error) {
 	var out Call
 	r := pbReader{buf: data}

@@ -10,6 +10,8 @@
     <string name="menu_share_logs">Share logs</string>
     <string name="menu_reset">Reset</string>
     <string name="menu_tunnel">Tunnel: %1$s</string>
+    <string name="menu_tunnel_mode">Tunnel mode: %1$s</string>
+    <string name="tunnel_mode_prompt">Tunnel mode</string>
     <string name="menu_split_tunneling">Split tunneling (%1$s)</string>
     <string name="menu_split_tunneling_manage">Manage split tunneling apps</string>
     <string name="menu_name_in_call">Name in call</string>

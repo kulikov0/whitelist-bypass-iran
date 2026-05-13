@@ -325,10 +325,6 @@ body {
 }
 
 .log-panel:first-child {
-  border-right: 1px solid #333;
-}
-
-.logs.relay-only .log-panel:first-child {
   border-right: none;
 }
 
@@ -349,7 +345,7 @@ body {
 }
 
 .log-download-btn {
-  display: none;
+  display: inline-block;
   float: right;
   width: 16px;
   height: 16px;
@@ -362,10 +358,6 @@ body {
 
 .log-download-btn:hover {
   filter: invert(0.88);
-}
-
-.logs.relay-only .log-download-btn {
-  display: inline-block;
 }
 
 .log-content {

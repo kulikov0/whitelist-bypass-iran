@@ -76,6 +76,13 @@ func (rb *RelayBridge) closeAll() {
 		rb.conns.Delete(key)
 		return true
 	})
+	rb.udpClients.Range(func(key, value any) bool {
+		if uc, ok := value.(*udpClient); ok && uc.udpConn != nil {
+			uc.udpConn.Close()
+		}
+		rb.udpClients.Delete(key)
+		return true
+	})
 }
 
 func (rb *RelayBridge) Reset() {

@@ -1,0 +1,4 @@
+node_modules/
+jsdom/
+headless-creator
+headless-*

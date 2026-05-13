@@ -44,6 +44,7 @@ class HeadlessBaleFragment : Fragment() {
                             put("resources", "default")
                             put("vp8Fps", Prefs.vp8Fps)
                             put("vp8Batch", Prefs.vp8Batch)
+                            put("tunnelMode", Prefs.tunnelMode.wire)
                         }
                         relay.sendJoinParams(params.toString())
                     }

@@ -50,6 +50,7 @@ func (j *BaleHeadlessJoiner) RunWithParams(jsonParams string) {
 		Resources   string `json:"resources"`
 		VP8FPS      int    `json:"vp8Fps"`
 		VP8Batch    int    `json:"vp8Batch"`
+		TunnelMode  string `json:"tunnelMode"`
 	}
 	if err := json.Unmarshal([]byte(jsonParams), &params); err != nil {
 		j.logFn("bale-joiner: failed to parse params: %v", err)
@@ -70,6 +71,14 @@ func (j *BaleHeadlessJoiner) RunWithParams(jsonParams string) {
 	if params.VP8Batch == 0 {
 		params.VP8Batch = 30
 	}
+	switch params.TunnelMode {
+	case "", bale.ModeVP8:
+		params.TunnelMode = bale.ModeVP8
+	case bale.ModeDC:
+	default:
+		j.logFn("bale-joiner: unknown tunnelMode %q, falling back to vp8", params.TunnelMode)
+		params.TunnelMode = bale.ModeVP8
+	}
 
 	var memLimit int64
 	switch params.Resources {
@@ -87,7 +96,7 @@ func (j *BaleHeadlessJoiner) RunWithParams(jsonParams string) {
 		debug.SetMemoryLimit(memLimit)
 	}
 	common.MaskingEnabled = true
-	j.logFn("[config] resources=%s mem-limit=%d vp8-fps=%d vp8-batch=%d", params.Resources, memLimit, params.VP8FPS, params.VP8Batch)
+	j.logFn("[config] resources=%s mem-limit=%d vp8-fps=%d vp8-batch=%d tunnel-mode=%s", params.Resources, memLimit, params.VP8FPS, params.VP8Batch, params.TunnelMode)
 	j.Status.EmitStatus(common.StatusConnecting)
 
 	code := bale.ExtractShareCode(params.JoinLink)
@@ -179,6 +188,8 @@ func (j *BaleHeadlessJoiner) RunWithParams(jsonParams string) {
 	}
 
 	sess := bale.NewSession(bale.SessionConfig{
+		Role:           bale.RoleJoiner,
+		TunnelMode:     params.TunnelMode,
 		WSURL:          joined.URL,
 		RoomToken:      joined.LivekitJWT,
 		Origin:         baleOrigin,

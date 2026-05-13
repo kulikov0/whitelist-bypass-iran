@@ -4,16 +4,16 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"regexp"
 	"strings"
 
 	"whitelist-bypass-iran/relay/common"
 )
 
+const baleWSURL = "wss://meet.bale.ai/ws"
+
 type baleAnonConfig struct {
-	APIVersion int64
-	WSURL      string
-	Token      string
+	WSURL string
+	Token string
 }
 
 func baleHttpGet(client *http.Client, endpoint, origin string) ([]byte, error) {
@@ -50,27 +50,7 @@ func baleLooksLikeJWT(s string) bool {
 }
 
 func baleFetchAnonConfig(client *http.Client, logFn func(string, ...any)) (baleAnonConfig, error) {
-	var cfg baleAnonConfig
-
-	page, err := baleHttpGet(client, "https://meet.bale.ai/i/dummy", "")
-	if err != nil {
-		return cfg, fmt.Errorf("fetch meet.bale.ai page: %w", err)
-	}
-
-	bundleRe := regexp.MustCompile(`/static/js/index\.[a-f0-9]+\.js`)
-	bundlePath := bundleRe.FindString(string(page))
-	if bundlePath == "" {
-		return cfg, fmt.Errorf("index bundle not found in meet page")
-	}
-	bundleURL := "https://meet.bale.ai" + bundlePath
-	logFn("[config] bundle: %s", bundleURL)
-
-	if _, err := baleHttpGet(client, bundleURL, ""); err != nil {
-		return cfg, fmt.Errorf("fetch bundle: %w", err)
-	}
-
-	cfg.WSURL = "wss://meet.bale.ai/ws"
-	cfg.APIVersion = 1
+	cfg := baleAnonConfig{WSURL: baleWSURL}
 
 	var token string
 	for attempt := 1; attempt <= 5; attempt++ {
@@ -91,21 +71,6 @@ func baleFetchAnonConfig(client *http.Client, logFn func(string, ...any)) (baleA
 	}
 	cfg.Token = token
 
-	logFn("[config] ws=%s apiVersion=%d tokenLen=%d", cfg.WSURL, cfg.APIVersion, len(cfg.Token))
+	logFn("[config] ws=%s tokenLen=%d", cfg.WSURL, len(cfg.Token))
 	return cfg, nil
-}
-
-func baleExtractShareCode(joinLink string) string {
-	s := strings.TrimSpace(joinLink)
-	s = strings.TrimRight(s, "/")
-	if i := strings.IndexByte(s, '?'); i >= 0 {
-		s = s[:i]
-	}
-	if i := strings.IndexByte(s, '#'); i >= 0 {
-		s = s[:i]
-	}
-	if i := strings.LastIndexByte(s, '/'); i >= 0 {
-		s = s[i+1:]
-	}
-	return s
 }

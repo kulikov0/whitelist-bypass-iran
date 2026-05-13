@@ -39,7 +39,11 @@ func main() {
 	case "bale-headless-joiner":
 		c := android.NewBaleHeadlessJoiner(log.Printf)
 		c.OnConnected = func(tun tunnel.DataTunnel) {
-			startJoinerBridge(tun, common.VP8BufSize)
+			readBuf := common.VP8BufSize
+			if _, ok := tun.(*tunnel.DCTunnel); ok {
+				readBuf = common.DCSocksReadBuf
+			}
+			startJoinerBridge(tun, readBuf)
 		}
 		c.Run()
 	default:
