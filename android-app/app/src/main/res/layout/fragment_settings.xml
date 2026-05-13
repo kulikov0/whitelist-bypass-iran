@@ -15,6 +15,15 @@
             android:orientation="vertical">
 
             <TextView
+                android:id="@+id/tunnelModeItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:paddingHorizontal="24dp"
+                android:paddingVertical="14dp"
+                android:textSize="16sp" />
+
+            <TextView
                 android:id="@+id/splitTunnelingItem"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -51,15 +60,6 @@
                 android:paddingHorizontal="24dp"
                 android:paddingVertical="14dp"
                 android:text="@string/menu_dns_settings"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/tunnelModeItem"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="?attr/selectableItemBackground"
-                android:paddingHorizontal="24dp"
-                android:paddingVertical="14dp"
                 android:textSize="16sp" />
 
             <TextView
