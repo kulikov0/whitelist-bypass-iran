@@ -20,11 +20,12 @@ import (
 const baleOrigin = "https://meet.bale.ai"
 
 type BaleHeadlessJoiner struct {
-	logFn       func(string, ...any)
-	OnConnected func(tunnel.DataTunnel)
-	ResolveFn   ResolveFunc
-	Status      StatusEmitter
-	PCConfig    PeerConnectionConfigurer
+	logFn             func(string, ...any)
+	OnConnected       func(tunnel.DataTunnel)
+	OnRemoteCandidate func(target int, candidate string)
+	ResolveFn         ResolveFunc
+	Status            StatusEmitter
+	PCConfig          PeerConnectionConfigurer
 
 	mu      sync.Mutex
 	session *bale.Session
@@ -207,6 +208,9 @@ func (j *BaleHeadlessJoiner) RunWithParams(jsonParams string) {
 		if j.OnConnected != nil {
 			j.OnConnected(tun)
 		}
+	}
+	if j.OnRemoteCandidate != nil {
+		sess.OnRemoteCandidate = j.OnRemoteCandidate
 	}
 
 	j.mu.Lock()

@@ -64,8 +64,9 @@ type Session struct {
 
 	done chan struct{}
 
-	OnConnected   func(tunnel.DataTunnel)
-	OnPeerRestart func()
+	OnConnected       func(tunnel.DataTunnel)
+	OnPeerRestart     func()
+	OnRemoteCandidate func(target int, candidate string)
 }
 
 func NewSession(cfg SessionConfig) *Session {
@@ -97,6 +98,9 @@ func (s *Session) Start() error {
 	s.lk.OnPubConnected = s.onPubConnected
 	if s.cfg.Role == RoleCreator {
 		s.lk.OnParticipantUpdate = s.onParticipantUpdate
+	}
+	if s.OnRemoteCandidate != nil {
+		s.lk.OnRemoteCandidate = s.OnRemoteCandidate
 	}
 
 	if err := s.lk.Connect(); err != nil {

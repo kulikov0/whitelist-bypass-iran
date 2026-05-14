@@ -89,6 +89,8 @@ rm -f "$RELAY_DIR"/relay-bundle "$RELAY_DIR"/relay-bundle.exe
 rm -f "$HEADLESS_DIR"/headless-bale-darwin "$HEADLESS_DIR"/headless-bale-windows-*.exe "$HEADLESS_DIR"/headless-bale-linux-*
 rm -f "$HEADLESS_DIR"/headless-bale-bundle "$HEADLESS_DIR"/headless-bale-bundle.exe
 
+"$ROOT/clean-prebuilts.sh"
+
 echo ""
 echo "=== Done ==="
 ls -lh "$ROOT/prebuilts/" 2>/dev/null || true

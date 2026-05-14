@@ -77,6 +77,7 @@ type Client struct {
 	OnDataChannel        func(*webrtc.DataChannel)
 	OnPubConnected       func()
 	OnParticipantUpdate  func([]ParticipantInfo)
+	OnRemoteCandidate    func(target int, candidateInit string)
 }
 
 func NewClient(cfg Config) *Client {
@@ -408,6 +409,9 @@ func (c *Client) applyRemoteTrickle(m trickleMsg) {
 	if err := json.Unmarshal([]byte(m.CandidateInit), &ic); err != nil {
 		c.logFn("[lk] decode trickle candidate: %v", err)
 		return
+	}
+	if c.OnRemoteCandidate != nil {
+		c.OnRemoteCandidate(int(m.Target), ic.Candidate)
 	}
 	switch m.Target {
 	case TargetPublisher:

@@ -17,6 +17,10 @@ echo ""
 echo "=== Building creator-app ==="
 "$ROOT/build-creator.sh"
 
+echo ""
+echo "=== Building desktop joiner Electron app (Windows + Linux + macOS) ==="
+"$ROOT/build-joiner-app.sh"
+
 if [ "$(uname)" = "Darwin" ]; then
     echo ""
     echo "=== Building iOS app ==="
@@ -25,6 +29,8 @@ else
     echo ""
     echo "=== Skipping iOS build (requires macOS) ==="
 fi
+
+"$ROOT/clean-prebuilts.sh"
 
 echo ""
 echo "=== Release complete ==="

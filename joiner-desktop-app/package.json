@@ -1,0 +1,69 @@
+{
+  "name": "whitelist-bypass-iran-joiner",
+  "version": "0.1.0",
+  "main": "dist/main/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "tsc && electron .",
+    "start:dev": "electron ."
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0",
+    "typescript": "^5.6.0"
+  },
+  "build": {
+    "appId": "whitelist.bypass.iran.joiner",
+    "productName": "WhitelistBypass Joiner",
+    "directories": {
+      "output": "../prebuilts"
+    },
+    "files": [
+      "dist/**/*",
+      "index.html",
+      "styles/**/*",
+      "resources/**/*"
+    ],
+    "win": {
+      "target": "portable",
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "icon": "resources/icon.ico",
+      "requestedExecutionLevel": "requireAdministrator",
+      "extraResources": [
+        {
+          "from": "desktop-joiner/desktop-joiner-bundle.exe",
+          "to": "desktop-joiner.exe"
+        },
+        {
+          "from": "desktop-joiner/wintun-bundle.dll",
+          "to": "wintun.dll"
+        }
+      ]
+    },
+    "linux": {
+      "target": "AppImage",
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "icon": "resources/icon.png",
+      "category": "Network",
+      "extraResources": [
+        {
+          "from": "desktop-joiner/desktop-joiner-bundle",
+          "to": "desktop-joiner"
+        }
+      ]
+    },
+    "mac": {
+      "target": "dmg",
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "icon": "resources/icon.icns",
+      "category": "public.app-category.utilities",
+      "extraResources": [
+        {
+          "from": "desktop-joiner/desktop-joiner-darwin",
+          "to": "desktop-joiner"
+        }
+      ]
+    }
+  }
+}
