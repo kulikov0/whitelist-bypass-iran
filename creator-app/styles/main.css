@@ -314,7 +314,7 @@ body {
   display: flex;
   gap: 0;
   border-top: 1px solid #333;
-  height: 120px;
+  height: 280px;
   flex-shrink: 0;
 }
 
