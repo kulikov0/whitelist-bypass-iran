@@ -22,7 +22,9 @@ const (
 	UDPBufSize   = 4096
 	RTPBufSize   = 65536
 	// VP8BufSize fits one RTP packet: 1200 MTU - 12 RTP header - 6 VP8 descriptor - 64 tunnel wrapper - 9 protocol frame
-	// (tunnel wrapper = 20 vp8 keepalive header + 4 epoch + 24 XChaCha20 nonce + 16 Poly1305 tag)
+	// Tunnel wrapper budget assumes the 20-byte vp8 keepalive header. Data frames
+	// use the 17-byte vp8 interframe header so their real wrapper is 61 bytes,
+	// leaving 3 extra bytes of slack on every data packet.
 	VP8BufSize     = 1100
 	DCBufSize      = 32768
 	DCSocksReadBuf = 8192

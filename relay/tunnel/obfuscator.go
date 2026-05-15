@@ -24,10 +24,18 @@ var vp8Keepalive = []byte{
 	0x99, 0x84, 0x88, 0xfc,
 }
 
+var vp8Interframe = []byte{
+	0xb1, 0x01, 0x00, 0x08, 0x11, 0x18, 0x00, 0x18,
+	0x00, 0x18, 0x58, 0x2f, 0xf4, 0x00, 0x08, 0x00,
+	0x00,
+}
+
 const (
-	vp8KeepaliveLen = 20
-	epochOff        = vp8KeepaliveLen
-	epochHdrLen     = vp8KeepaliveLen + 4
+	vp8KeepaliveLen  = 20
+	vp8InterframeLen = 17
+	epochFieldLen    = 4
+	keepaliveHdrLen  = vp8KeepaliveLen + epochFieldLen
+	interframeHdrLen = vp8InterframeLen + epochFieldLen
 )
 
 var ErrEmptySecret = errors.New("tunnel: obfuscator requires a non-empty secret")
@@ -117,19 +125,26 @@ func hexPrefix(b []byte, n int) string {
 
 func (o *TunnelObfuscator) LocalEpoch() uint32 { return o.localEpoch }
 
-func (o *TunnelObfuscator) header() []byte {
-	hdr := make([]byte, epochHdrLen)
+func (o *TunnelObfuscator) keepaliveHeader() []byte {
+	hdr := make([]byte, keepaliveHdrLen)
 	copy(hdr, vp8Keepalive)
-	binary.BigEndian.PutUint32(hdr[epochOff:], o.localEpoch)
+	binary.BigEndian.PutUint32(hdr[vp8KeepaliveLen:], o.localEpoch)
+	return hdr
+}
+
+func (o *TunnelObfuscator) dataHeader() []byte {
+	hdr := make([]byte, interframeHdrLen)
+	copy(hdr, vp8Interframe)
+	binary.BigEndian.PutUint32(hdr[vp8InterframeLen:], o.localEpoch)
 	return hdr
 }
 
 func (o *TunnelObfuscator) EncodeKeepalive() []byte {
-	return o.header()
+	return o.keepaliveHeader()
 }
 
 func (o *TunnelObfuscator) EncodeData(payload []byte) []byte {
-	hdr := o.header()
+	hdr := o.dataHeader()
 	nonce := make([]byte, o.aead.NonceSize())
 	if _, err := rand.Read(nonce); err != nil {
 		return nil
@@ -178,10 +193,24 @@ func (o *TunnelObfuscator) DecryptPayload(data []byte) ([]byte, bool) {
 }
 
 func (o *TunnelObfuscator) Decode(frame []byte) DecodeResult {
-	if len(frame) < epochHdrLen {
+	if len(frame) < 1 {
 		return DecodeResult{}
 	}
-	peerEpoch := binary.BigEndian.Uint32(frame[epochOff:epochHdrLen])
+	var hdrLen, epochOff int
+	switch frame[0] {
+	case vp8Keepalive[0]:
+		hdrLen = keepaliveHdrLen
+		epochOff = vp8KeepaliveLen
+	case vp8Interframe[0]:
+		hdrLen = interframeHdrLen
+		epochOff = vp8InterframeLen
+	default:
+		return DecodeResult{}
+	}
+	if len(frame) < hdrLen {
+		return DecodeResult{}
+	}
+	peerEpoch := binary.BigEndian.Uint32(frame[epochOff : epochOff+epochFieldLen])
 	if peerEpoch == o.localEpoch {
 		return DecodeResult{HasFrame: true, SelfEcho: true, PeerEpoch: peerEpoch}
 	}
@@ -197,12 +226,12 @@ func (o *TunnelObfuscator) Decode(frame []byte) DecodeResult {
 	}
 	o.mu.Unlock()
 
-	if len(frame) == epochHdrLen {
+	if len(frame) == hdrLen {
 		res.Keepalive = true
 		return res
 	}
 
-	body := frame[epochHdrLen:]
+	body := frame[hdrLen:]
 	nonceSize := o.aead.NonceSize()
 	if len(body) < nonceSize+o.aead.Overhead() {
 		return DecodeResult{}
