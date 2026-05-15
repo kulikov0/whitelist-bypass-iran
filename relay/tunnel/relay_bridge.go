@@ -42,6 +42,10 @@ type RelayBridge struct {
 
 	sendCount atomic.Uint32
 	recvCount atomic.Uint32
+
+	listenerMu sync.Mutex
+	listener   net.Listener
+	closed     atomic.Bool
 }
 
 func NewRelayBridgeWithAuth(tunnel DataTunnel, mode string, readBuf int, logFn func(string, ...any), socksUser, socksPass string) *RelayBridge {
@@ -65,8 +69,11 @@ func NewRelayBridge(tunnel DataTunnel, mode string, readBuf int, logFn func(stri
 }
 
 func (rb *RelayBridge) closeAll() {
-	rb.logFn("relay: closing all connections")
+	var ids []uint32
 	rb.conns.Range(func(key, value any) bool {
+		if id, ok := key.(uint32); ok {
+			ids = append(ids, id)
+		}
 		switch v := value.(type) {
 		case net.Conn:
 			v.Close()
@@ -76,17 +83,41 @@ func (rb *RelayBridge) closeAll() {
 		rb.conns.Delete(key)
 		return true
 	})
+	udpCount := 0
 	rb.udpClients.Range(func(key, value any) bool {
 		if uc, ok := value.(*udpClient); ok && uc.udpConn != nil {
 			uc.udpConn.Close()
 		}
+		udpCount++
 		rb.udpClients.Delete(key)
 		return true
 	})
+	rb.logFn("relay: closeAll mode=%s tcp=%d udp=%d ids=%v nextID=%d", rb.mode, len(ids), udpCount, ids, rb.nextID.Load())
 }
 
 func (rb *RelayBridge) Reset() {
 	rb.closeAll()
+}
+
+func (rb *RelayBridge) Close() {
+	if !rb.closed.CompareAndSwap(false, true) {
+		return
+	}
+	rb.listenerMu.Lock()
+	ln := rb.listener
+	rb.listener = nil
+	rb.listenerMu.Unlock()
+	if ln != nil {
+		rb.logFn("relay: bridge Close closing socks listener")
+		ln.Close()
+	}
+	rb.closeAll()
+}
+
+func (rb *RelayBridge) Stats() (tcpConns, udpConns int, nextID uint32) {
+	rb.conns.Range(func(_, _ any) bool { tcpConns++; return true })
+	rb.udpClients.Range(func(_, _ any) bool { udpConns++; return true })
+	return tcpConns, udpConns, rb.nextID.Load()
 }
 
 func (rb *RelayBridge) MarkReady() {
@@ -254,14 +285,29 @@ type socksConn struct {
 }
 
 func (rb *RelayBridge) ListenSOCKS(addr string) error {
+	if rb.closed.Load() {
+		return fmt.Errorf("relay: bridge already closed")
+	}
 	ln, err := net.Listen("tcp", addr)
 	if err != nil {
 		return err
 	}
+	rb.listenerMu.Lock()
+	if rb.closed.Load() {
+		rb.listenerMu.Unlock()
+		ln.Close()
+		return fmt.Errorf("relay: bridge already closed")
+	}
+	rb.listener = ln
+	rb.listenerMu.Unlock()
 	rb.logFn("relay: SOCKS5 on %s", addr)
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
+			if rb.closed.Load() {
+				rb.logFn("relay: SOCKS listener stopped (bridge closed)")
+				return nil
+			}
 			rb.logFn("relay: accept error: %v", err)
 			continue
 		}
@@ -271,6 +317,10 @@ func (rb *RelayBridge) ListenSOCKS(addr string) error {
 
 func (rb *RelayBridge) handleSOCKS(conn net.Conn) {
 	<-rb.ready
+	if rb.closed.Load() {
+		conn.Close()
+		return
+	}
 	buf := make([]byte, common.HandshakeBuf)
 	n, err := conn.Read(buf)
 	if err != nil || n < 2 || buf[0] != common.Ver {
