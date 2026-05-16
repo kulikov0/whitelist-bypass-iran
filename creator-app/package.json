@@ -15,7 +15,7 @@
   },
   "build": {
     "appId": "whitelist.bypass.creator.iran",
-    "productName": "Whitelist Bypass Creator Iran",
+    "productName": "Whitelist Bypass Creator",
     "directories": {
       "output": "../prebuilts"
     },

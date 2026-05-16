@@ -119,10 +119,10 @@ Output in `prebuilts/`:
 
 | File | Platform |
 |---|---|
-| `Whitelist Bypass Creator Iran-*-arm64.dmg` | macOS |
-| `Whitelist Bypass Creator Iran-*-x64.exe` | Windows x64 |
-| `Whitelist Bypass Creator Iran-*-ia32.exe` | Windows x86 |
-| `Whitelist Bypass Creator Iran-*.AppImage` | Linux x64 |
+| `Whitelist Bypass Creator-*-arm64.dmg` | macOS |
+| `Whitelist Bypass Creator-*-x64.exe` | Windows x64 |
+| `Whitelist Bypass Creator-*-ia32.exe` | Windows x86 |
+| `Whitelist Bypass Creator-*.AppImage` | Linux x64 |
 | `WhitelistBypass Joiner-*-arm64.dmg` | macOS |
 | `WhitelistBypass Joiner-*-x64.exe` | Windows x64 |
 | `WhitelistBypass Joiner-*-ia32.exe` | Windows x86 |

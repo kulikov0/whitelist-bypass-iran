@@ -141,7 +141,7 @@ sudo apt install libfuse2
 ### 4. دانلود و نصب Creator
 
 ```sh
-wget https://github.com/kulikov0/whitelist-bypass-iran/releases/download/v0.1.0/Whitelist.Bypass.Creator.Iran-0.1.0.AppImage
+wget https://github.com/kulikov0/whitelist-bypass-iran/releases/download/v0.1.0/Whitelist.Bypass.Creator-0.1.0.AppImage
 mv *.AppImage creator.AppImage
 chmod +x creator.AppImage
 sudo mv creator.AppImage /usr/bin/whitelist-bypass-creator
