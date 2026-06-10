@@ -190,6 +190,10 @@ func (t *Tunnel) AddBypassIP(ip net.IP) error {
 	}
 	addr := v4.String()
 	t.mu.Lock()
+	if t.stopped {
+		t.mu.Unlock()
+		return nil
+	}
 	if _, dup := t.bypass[addr]; dup {
 		t.mu.Unlock()
 		return nil
@@ -203,6 +207,13 @@ func (t *Tunnel) AddBypassIP(ip net.IP) error {
 		return fmt.Errorf("desktoptun: add bypass %s via %s: %w", addr, gw, err)
 	}
 	t.mu.Lock()
+	if t.stopped {
+		t.mu.Unlock()
+		if err := deleteHostRoute(addr); err != nil {
+			t.log("[desktoptun] remove orphaned bypass %s: %v", addr, err)
+		}
+		return nil
+	}
 	t.bypass[addr] = struct{}{}
 	t.mu.Unlock()
 	t.log("[desktoptun] bypass %s -> %s", addr, gw)
