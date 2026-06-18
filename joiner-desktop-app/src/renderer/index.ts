@@ -20,6 +20,27 @@ const linkInput = input('link');
 
 stopBtn.disabled = true;
 
+// Load settings from localStorage
+try {
+  const savedSettings = localStorage.getItem('joiner_settings');
+  if (savedSettings) {
+    const s = JSON.parse(savedSettings);
+    if (s.link) linkInput.value = s.link;
+    if (s.displayName) input('name').value = s.displayName;
+    if (s.socksPort) input('socksPort').value = String(s.socksPort);
+    if (s.socksUser) input('socksUser').value = s.socksUser;
+    if (s.socksPass) input('socksPass').value = s.socksPass;
+    if (s.tunnelMode) select('tunnelMode').value = s.tunnelMode;
+    if (s.vp8Fps) input('vp8Fps').value = String(s.vp8Fps);
+    if (s.vp8Batch) input('vp8Batch').value = String(s.vp8Batch);
+    if (s.resources) select('resources').value = s.resources;
+    if (s.dns) input('dns').value = s.dns;
+    if (s.noTun !== undefined) input('noTun').checked = s.noTun;
+  }
+} catch (e) {
+  console.error('Failed to load settings from localStorage', e);
+}
+
 downloadLogsBtn.addEventListener('click', () => {
   const blob = new Blob([logEl.textContent || ''], { type: 'text/plain' });
   const anchor = document.createElement('a');
@@ -64,6 +85,14 @@ startBtn.addEventListener('click', async () => {
     dns: input('dns').value.trim() || '1.1.1.1,8.8.8.8',
     noTun: input('noTun').checked,
   };
+
+  // Save settings to localStorage
+  try {
+    localStorage.setItem('joiner_settings', JSON.stringify(settings));
+  } catch (e) {
+    console.error('Failed to save settings to localStorage', e);
+  }
+
   const r = await bridge.start(settings);
   if (!r.ok) appendLog(`[ui] start failed: ${r.error}\n`);
 });
