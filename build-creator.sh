@@ -10,11 +10,15 @@ HEADLESS_BALE_DIR="$HEADLESS_DIR/bale"
 echo "=== Building relay binaries ==="
 cd "$RELAY_DIR"
 
-echo "macOS universal..."
-GOOS=darwin GOARCH=amd64 go build -o relay-darwin-amd64 .
-GOOS=darwin GOARCH=arm64 go build -o relay-darwin-arm64 .
-lipo -create -output relay-darwin relay-darwin-amd64 relay-darwin-arm64
-rm relay-darwin-amd64 relay-darwin-arm64
+if command -v lipo >/dev/null; then
+    echo "macOS universal..."
+    GOOS=darwin GOARCH=amd64 go build -o relay-darwin-amd64 .
+    GOOS=darwin GOARCH=arm64 go build -o relay-darwin-arm64 .
+    lipo -create -output relay-darwin relay-darwin-amd64 relay-darwin-arm64
+    rm relay-darwin-amd64 relay-darwin-arm64
+else
+    echo "lipo not found, skipping macOS universal build"
+fi
 
 echo "Windows x64..."
 GOOS=windows GOARCH=amd64 go build -o relay-windows-x64.exe .
@@ -32,11 +36,15 @@ echo ""
 echo "=== Building headless-bale-creator ==="
 cd "$HEADLESS_BALE_DIR"
 
-echo "macOS universal..."
-GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o "$HEADLESS_DIR/headless-bale-darwin-amd64" .
-GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o "$HEADLESS_DIR/headless-bale-darwin-arm64" .
-lipo -create -output "$HEADLESS_DIR/headless-bale-darwin" "$HEADLESS_DIR/headless-bale-darwin-amd64" "$HEADLESS_DIR/headless-bale-darwin-arm64"
-rm "$HEADLESS_DIR/headless-bale-darwin-amd64" "$HEADLESS_DIR/headless-bale-darwin-arm64"
+if command -v lipo >/dev/null; then
+    echo "macOS universal..."
+    GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o "$HEADLESS_DIR/headless-bale-darwin-amd64" .
+    GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o "$HEADLESS_DIR/headless-bale-darwin-arm64" .
+    lipo -create -output "$HEADLESS_DIR/headless-bale-darwin" "$HEADLESS_DIR/headless-bale-darwin-amd64" "$HEADLESS_DIR/headless-bale-darwin-arm64"
+    rm "$HEADLESS_DIR/headless-bale-darwin-amd64" "$HEADLESS_DIR/headless-bale-darwin-arm64"
+else
+    echo "lipo not found, skipping macOS universal build for headless-bale"
+fi
 
 echo "Windows x64..."
 GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o "$HEADLESS_DIR/headless-bale-windows-x64.exe" .
