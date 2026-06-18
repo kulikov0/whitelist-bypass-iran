@@ -1,6 +1,14 @@
 #!/bin/sh
 set -e
 
+PLATFORM="linux"
+if [ "$(uname)" = "Darwin" ]; then
+    PLATFORM="mac"
+elif [ "$(uname)" = "Msys" ] || [ "$(uname)" = "MINGW64_NT" ] || [ "$(uname)" = "MINGW32_NT" ] || [ "$OS" = "Windows_NT" ]; then
+    PLATFORM="win"
+fi
+
+
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 RELAY_DIR="$ROOT/relay"
 CREATOR_DIR="$ROOT/creator-app"
@@ -64,33 +72,41 @@ cd "$CREATOR_DIR"
 npm install --quiet 2>&1
 npm run build 2>&1
 
-echo ""
-echo "--- macOS ---"
-npx electron-builder --mac || true
+if [ "$PLATFORM" = "mac" ]; then
+    echo ""
+    echo "--- macOS ---"
+    npx electron-builder --mac || true
+fi
 
-echo ""
-echo "--- Windows x64 ---"
-cp "$RELAY_DIR/relay-windows-x64.exe" "$RELAY_DIR/relay-bundle.exe"
-cp "$HEADLESS_DIR/headless-bale-windows-x64.exe" "$HEADLESS_DIR/headless-bale-bundle.exe"
-npx electron-builder --win --x64
+if [ "$PLATFORM" = "win" ]; then
+    echo ""
+    echo "--- Windows x64 ---"
+    cp "$RELAY_DIR/relay-windows-x64.exe" "$RELAY_DIR/relay-bundle.exe"
+    cp "$HEADLESS_DIR/headless-bale-windows-x64.exe" "$HEADLESS_DIR/headless-bale-bundle.exe"
+    npx electron-builder --win --x64
 
-echo ""
-echo "--- Windows x86 ---"
-cp "$RELAY_DIR/relay-windows-ia32.exe" "$RELAY_DIR/relay-bundle.exe"
-cp "$HEADLESS_DIR/headless-bale-windows-ia32.exe" "$HEADLESS_DIR/headless-bale-bundle.exe"
-npx electron-builder --win --ia32
+    echo ""
+    echo "--- Windows x86 ---"
+    cp "$RELAY_DIR/relay-windows-ia32.exe" "$RELAY_DIR/relay-bundle.exe"
+    cp "$HEADLESS_DIR/headless-bale-windows-ia32.exe" "$HEADLESS_DIR/headless-bale-bundle.exe"
+    npx electron-builder --win --ia32
+fi
 
-echo ""
-echo "--- Linux x64 ---"
-cp "$RELAY_DIR/relay-linux-x64" "$RELAY_DIR/relay-bundle"
-cp "$HEADLESS_DIR/headless-bale-linux-x64" "$HEADLESS_DIR/headless-bale-bundle"
-npx electron-builder --linux --x64
+if [ "$PLATFORM" = "linux" ]; then
+    echo ""
+    echo "--- Linux x64 ---"
+    cp "$RELAY_DIR/relay-linux-x64" "$RELAY_DIR/relay-bundle"
+    cp "$HEADLESS_DIR/headless-bale-linux-x64" "$HEADLESS_DIR/headless-bale-bundle"
+    npx electron-builder --linux --x64
+fi
 
-echo ""
-echo "=== Copying headless binaries to prebuilts ==="
-mkdir -p "$ROOT/prebuilts"
-cp "$HEADLESS_DIR/headless-bale-linux-x64" "$ROOT/prebuilts/headless-bale-creator-linux-x64"
-cp "$HEADLESS_DIR/headless-bale-linux-ia32" "$ROOT/prebuilts/headless-bale-creator-linux-ia32"
+if [ "$PLATFORM" = "linux" ]; then
+    echo ""
+    echo "=== Copying headless binaries to prebuilts ==="
+    mkdir -p "$ROOT/prebuilts"
+    cp "$HEADLESS_DIR/headless-bale-linux-x64" "$ROOT/prebuilts/headless-bale-creator-linux-x64"
+    cp "$HEADLESS_DIR/headless-bale-linux-ia32" "$ROOT/prebuilts/headless-bale-creator-linux-ia32"
+fi
 
 rm -f "$RELAY_DIR"/relay-darwin "$RELAY_DIR"/relay-windows-*.exe "$RELAY_DIR"/relay-linux-*
 rm -f "$RELAY_DIR"/relay-bundle "$RELAY_DIR"/relay-bundle.exe
