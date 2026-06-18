@@ -75,4 +75,4 @@ rm -f "$JOINER_GO_DIR/wintun.zip"
 
 echo ""
 echo "=== Done ==="
-ls -lh "$JOINER_GO_DIR"/desktop-joiner-* "$JOINER_GO_DIR"/wintun-*.dll
+ls -lh "$JOINER_GO_DIR"/desktop-joiner-* "$JOINER_GO_DIR"/wintun-*.dll 2>/dev/null || true
