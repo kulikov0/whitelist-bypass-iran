@@ -30,7 +30,7 @@ GOOS=linux GOARCH=amd64 go build -o relay-linux-x64 .
 echo "Linux x86..."
 GOOS=linux GOARCH=386 go build -o relay-linux-ia32 .
 
-ls -lh relay-darwin relay-windows-*.exe relay-linux-*
+ls -lh relay-darwin relay-windows-*.exe relay-linux-* 2>/dev/null || true
 
 echo ""
 echo "=== Building headless-bale-creator ==="
@@ -56,7 +56,7 @@ GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o "$HEADLESS_DIR/headless-bal
 echo "Linux x86..."
 GOOS=linux GOARCH=386 go build -ldflags="-s -w" -o "$HEADLESS_DIR/headless-bale-linux-ia32" .
 
-ls -lh "$HEADLESS_DIR"/headless-bale-darwin
+ls -lh "$HEADLESS_DIR"/headless-bale-darwin 2>/dev/null || true
 
 echo ""
 echo "=== Building Electron creator ==="
