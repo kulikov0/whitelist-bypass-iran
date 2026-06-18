@@ -83,6 +83,9 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && 'manual-build' || github.ref_name }}
+          name: ${{ github.event_name == 'workflow_dispatch' && 'Manual Build' || github.ref_name }}
+          prerelease: ${{ github.event_name == 'workflow_dispatch' }}
           files: release-files/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
