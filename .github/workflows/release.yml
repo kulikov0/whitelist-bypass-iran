@@ -85,7 +85,8 @@ jobs:
         with:
           tag_name: ${{ github.event_name == 'workflow_dispatch' && 'manual-build' || github.ref_name }}
           name: ${{ github.event_name == 'workflow_dispatch' && 'Manual Build' || github.ref_name }}
-          prerelease: ${{ github.event_name == 'workflow_dispatch' }}
+          prerelease: false
+          make_latest: true
           files: release-files/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
