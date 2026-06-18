@@ -50,6 +50,10 @@ build_linux() {
 }
 
 build_darwin_universal() {
+    if ! command -v lipo >/dev/null; then
+        echo "lipo not found, skipping macOS universal build"
+        return
+    fi
     echo ""
     echo "=== Building desktop-joiner darwin (universal) ==="
     cd "$JOINER_GO_DIR"
