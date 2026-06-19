@@ -4,6 +4,8 @@ set -e
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 PREBUILTS="$ROOT/prebuilts"
 
+export RELEASE_PLATFORM=all
+
 mkdir -p "$PREBUILTS"
 
 echo "=== Building Go side ==="
@@ -18,7 +20,7 @@ echo "=== Building creator-app ==="
 "$ROOT/build-creator.sh"
 
 echo ""
-echo "=== Building desktop joiner Electron app (Windows + Linux + macOS) ==="
+echo "=== Building desktop joiner Electron app ==="
 "$ROOT/build-joiner-app.sh"
 
 if [ "$(uname)" = "Darwin" ]; then
@@ -31,6 +33,18 @@ else
 fi
 
 "$ROOT/clean-prebuilts.sh"
+
+echo ""
+echo "=== Desktop installer coverage ==="
+for pat in "*.dmg:macOS" "*.exe:Windows" "*.AppImage:Linux"; do
+    glob=${pat%%:*}
+    label=${pat##*:}
+    if ls "$PREBUILTS"/$glob >/dev/null 2>&1; then
+        echo "  [ok]   $label"
+    else
+        echo "  [MISS] $label"
+    fi
+done
 
 echo ""
 echo "=== Release complete ==="

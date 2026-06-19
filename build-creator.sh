@@ -1,11 +1,15 @@
 #!/bin/sh
 set -e
 
-PLATFORM="linux"
-if [ "$(uname)" = "Darwin" ]; then
-    PLATFORM="mac"
-elif [ "$(uname)" = "Msys" ] || [ "$(uname)" = "MINGW64_NT" ] || [ "$(uname)" = "MINGW32_NT" ] || [ "$OS" = "Windows_NT" ]; then
-    PLATFORM="win"
+if [ -n "$RELEASE_PLATFORM" ]; then
+    PLATFORM="$RELEASE_PLATFORM"
+else
+    PLATFORM="linux"
+    if [ "$(uname)" = "Darwin" ]; then
+        PLATFORM="mac"
+    elif [ "$(uname)" = "Msys" ] || [ "$(uname)" = "MINGW64_NT" ] || [ "$(uname)" = "MINGW32_NT" ] || [ "$OS" = "Windows_NT" ]; then
+        PLATFORM="win"
+    fi
 fi
 
 
@@ -72,35 +76,35 @@ cd "$CREATOR_DIR"
 npm install --quiet 2>&1
 npm run build 2>&1
 
-if [ "$PLATFORM" = "mac" ]; then
+if [ "$PLATFORM" = "mac" ] || [ "$PLATFORM" = "all" ]; then
     echo ""
     echo "--- macOS ---"
     npx electron-builder --mac || true
 fi
 
-if [ "$PLATFORM" = "win" ]; then
+if [ "$PLATFORM" = "win" ] || [ "$PLATFORM" = "all" ]; then
     echo ""
     echo "--- Windows x64 ---"
     cp "$RELAY_DIR/relay-windows-x64.exe" "$RELAY_DIR/relay-bundle.exe"
     cp "$HEADLESS_DIR/headless-bale-windows-x64.exe" "$HEADLESS_DIR/headless-bale-bundle.exe"
-    npx electron-builder --win --x64
+    npx electron-builder --win --x64 || true
 
     echo ""
     echo "--- Windows x86 ---"
     cp "$RELAY_DIR/relay-windows-ia32.exe" "$RELAY_DIR/relay-bundle.exe"
     cp "$HEADLESS_DIR/headless-bale-windows-ia32.exe" "$HEADLESS_DIR/headless-bale-bundle.exe"
-    npx electron-builder --win --ia32
+    npx electron-builder --win --ia32 || true
 fi
 
-if [ "$PLATFORM" = "linux" ]; then
+if [ "$PLATFORM" = "linux" ] || [ "$PLATFORM" = "all" ]; then
     echo ""
     echo "--- Linux x64 ---"
     cp "$RELAY_DIR/relay-linux-x64" "$RELAY_DIR/relay-bundle"
     cp "$HEADLESS_DIR/headless-bale-linux-x64" "$HEADLESS_DIR/headless-bale-bundle"
-    npx electron-builder --linux --x64
+    npx electron-builder --linux --x64 || true
 fi
 
-if [ "$PLATFORM" = "linux" ]; then
+if [ "$PLATFORM" = "linux" ] || [ "$PLATFORM" = "all" ]; then
     echo ""
     echo "=== Copying headless binaries to prebuilts ==="
     mkdir -p "$ROOT/prebuilts"
