@@ -50,6 +50,10 @@ build_linux() {
 }
 
 build_darwin_universal() {
+    if ! command -v lipo >/dev/null; then
+        echo "lipo not found, skipping macOS universal build"
+        return
+    fi
     echo ""
     echo "=== Building desktop-joiner darwin (universal) ==="
     cd "$JOINER_GO_DIR"
@@ -71,4 +75,4 @@ rm -f "$JOINER_GO_DIR/wintun.zip"
 
 echo ""
 echo "=== Done ==="
-ls -lh "$JOINER_GO_DIR"/desktop-joiner-* "$JOINER_GO_DIR"/wintun-*.dll
+ls -lh "$JOINER_GO_DIR"/desktop-joiner-* "$JOINER_GO_DIR"/wintun-*.dll 2>/dev/null || true

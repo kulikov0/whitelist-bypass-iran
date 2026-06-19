@@ -1,6 +1,14 @@
 #!/bin/sh
 set -e
 
+PLATFORM="linux"
+if [ "$(uname)" = "Darwin" ]; then
+    PLATFORM="mac"
+elif [ "$(uname)" = "Msys" ] || [ "$(uname)" = "MINGW64_NT" ] || [ "$(uname)" = "MINGW32_NT" ] || [ "$OS" = "Windows_NT" ]; then
+    PLATFORM="win"
+fi
+
+
 # Builds the user-facing Electron joiner app for Windows (portable .exe)
 # and Linux (AppImage), following the same per-arch bundle pattern as
 # build-creator.sh. Output ends up in prebuilts/ via electron-builder's
@@ -30,25 +38,29 @@ cleanup_artifacts() {
 }
 trap cleanup_artifacts EXIT
 
-echo ""
-echo "--- Windows x64 ---"
-cp "$JOINER_GO_DIR/desktop-joiner-windows-x64.exe" "$JOINER_GO_DIR/desktop-joiner-bundle.exe"
-cp "$JOINER_GO_DIR/wintun-x64.dll" "$JOINER_GO_DIR/wintun-bundle.dll"
-npx electron-builder --win --x64 --publish never
+if [ "$PLATFORM" = "win" ]; then
+    echo ""
+    echo "--- Windows x64 ---"
+    cp "$JOINER_GO_DIR/desktop-joiner-windows-x64.exe" "$JOINER_GO_DIR/desktop-joiner-bundle.exe"
+    cp "$JOINER_GO_DIR/wintun-x64.dll" "$JOINER_GO_DIR/wintun-bundle.dll"
+    npx electron-builder --win --x64 --publish never
 
-echo ""
-echo "--- Windows x86 ---"
-cp "$JOINER_GO_DIR/desktop-joiner-windows-ia32.exe" "$JOINER_GO_DIR/desktop-joiner-bundle.exe"
-cp "$JOINER_GO_DIR/wintun-ia32.dll" "$JOINER_GO_DIR/wintun-bundle.dll"
-npx electron-builder --win --ia32 --publish never
+    echo ""
+    echo "--- Windows x86 ---"
+    cp "$JOINER_GO_DIR/desktop-joiner-windows-ia32.exe" "$JOINER_GO_DIR/desktop-joiner-bundle.exe"
+    cp "$JOINER_GO_DIR/wintun-ia32.dll" "$JOINER_GO_DIR/wintun-bundle.dll"
+    npx electron-builder --win --ia32 --publish never
+fi
 
-echo ""
-echo "--- Linux x64 ---"
-cp "$JOINER_GO_DIR/desktop-joiner-linux-x64" "$JOINER_GO_DIR/desktop-joiner-bundle"
-chmod +x "$JOINER_GO_DIR/desktop-joiner-bundle"
-npx electron-builder --linux --x64 --publish never
+if [ "$PLATFORM" = "linux" ]; then
+    echo ""
+    echo "--- Linux x64 ---"
+    cp "$JOINER_GO_DIR/desktop-joiner-linux-x64" "$JOINER_GO_DIR/desktop-joiner-bundle"
+    chmod +x "$JOINER_GO_DIR/desktop-joiner-bundle"
+    npx electron-builder --linux --x64 --publish never
+fi
 
-if [ "$(uname)" = "Darwin" ]; then
+if [ "$PLATFORM" = "mac" ]; then
     echo ""
     echo "--- macOS (universal) ---"
     npx electron-builder --mac --publish never || true
