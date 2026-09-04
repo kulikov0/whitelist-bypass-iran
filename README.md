@@ -2,7 +2,7 @@
 
 Tunnels internet traffic through the Bale Meet video calling platform to bypass government whitelist censorship.
 
-Fork of [whitelist-bypass](https://github.com/eduarddeisling/whitelist-bypass) (VK / Telemost / WB Stream) adapted to Bale Meet.
+Fork of [whitelist-bypass](https://github.com/kulikov0/whitelist-bypass) (VK / Telemost / WB Stream) adapted to Bale Meet.
 
 ## Setup
 

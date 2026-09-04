@@ -1,7 +1,9 @@
 .DS_Store
 relay/mobile.aar
+relay/mobile-sources.jar
 relay/relay-*
 prebuilts/
-cookies*.json
+*cookies*.json
 relay/relay
 whitelist-experiments/
+experiments/
